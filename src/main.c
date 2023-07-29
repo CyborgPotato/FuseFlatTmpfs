@@ -1,4 +1,3 @@
-#include "fuse3/fuse_opt.h"
 #define FUSE_USE_VERSION 31
 
 #include <fuse3/fuse.h>
@@ -15,6 +14,9 @@ static struct options {
   const size_t max_filesize;
 } options;
 
+static uid_t uid;
+static gid_t gid;
+
 #define OPTION(t, p, v)                           \
     { t, offsetof(struct options, p), 1 }
 static const struct fuse_opt options_spec[] = {
@@ -30,8 +32,60 @@ static void *flattmp_init(struct fuse_conn_info *conn,
   return NULL;
 }
 
+static void flattmp_destroy(void *data) {}
+
+static int flattmp_getattr(const char *path, struct stat *stbuf,
+			   struct fuse_file_info *fi) {
+  int res = 0;
+
+  struct fuse_context *ctx;
+  ctx = fuse_get_context();
+  
+  uid = ctx->uid;
+  gid = ctx->gid;
+  
+  memset(stbuf, 0, sizeof(struct stat));
+  stbuf->st_uid = uid;
+  stbuf->st_gid = gid;
+  if (strcmp(path, "/") == 0) {
+    stbuf->st_mode = S_IFDIR | 0700;
+    stbuf->st_nlink = 1;
+  }else {
+    res = -ENOENT;
+  }
+  return res;
+}
+
+static int flattmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+			   off_t offset, struct fuse_file_info *fi,
+			   enum fuse_readdir_flags flags) {
+  /* There will never be more than the root directory */
+  if (strcmp(path, "/") !=0)
+    return -ENOENT;
+
+  filler(buf, ".", NULL, 0, 0);
+  filler(buf, "..", NULL, 0, 0);
+  
+  return 0;
+}
+
+static int flattmp_mknod(const char* path, mode_t mode, dev_t dev) {
+  printf("Creating path \"%s\"\n", path);
+  return 0;
+}
+
+static int flattmp_open(const char *path, struct fuse_file_info *fi) {
+  printf("Attempting to open \"%s\"\n", path);
+  return 0;
+}
+
 const struct fuse_operations flattmp_op = {
-  .init = flattmp_init,
+  .init    = &flattmp_init,
+  .destroy = &flattmp_destroy,
+  .getattr = &flattmp_getattr,
+  .readdir = &flattmp_readdir,
+  .mknod   = &flattmp_mknod,
+  .open    = &flattmp_open,
 };
 
 int main(int argc, char** argv) {

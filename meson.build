@@ -21,7 +21,6 @@ if host_system == 'linux'
   ]  
 endif
 
-
 executable('FlatTMPFUSE', src,
            install : true,
            dependencies : flattmp_deps)

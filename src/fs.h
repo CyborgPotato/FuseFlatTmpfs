@@ -6,9 +6,9 @@
 #include <stddef.h>
 #include <fuse3/fuse.h>
 
-typedef struct FLATTMP_NODE flatTmp_node_t;
-typedef struct FLATTMP_FILE flatTmp_file_t;
-typedef struct FLATTMP_DIR flatTmp_dir_t;
+typedef struct FLATTMP_NODE flattmp_node_t;
+typedef struct FLATTMP_FILE flattmp_file_t;
+typedef struct FLATTMP_DIR flattmp_dir_t;
 
 struct FLATTMP_FILE {
   void* content;
@@ -19,19 +19,22 @@ struct FLATTMP_FILE {
 
 struct FLATTMP_DIR {
   int lbits[n_ints_in(256)];
-  flatTmp_node_t *nodes;
+  flattmp_node_t *nodes;
 };
 
 struct FLATTMP_NODE {
   char* name;
   struct stat stat;
   union data {
-    flatTmp_file_t file;
-    flatTmp_dir_t dir;
+    flattmp_file_t file;
+    flattmp_dir_t dir;
   } data;
 };
 
-flatTmp_node_t flatTmp_node_init();
-void flatTmp_node_destroy();
+flattmp_node_t flattmp_node_init();
+void flattmp_node_destroy();
+flattmp_node_t flattmp_dir_init(const char *path, mode_t mode);
+
+flattmp_node_t* flattmp_node_search(flattmp_node_t node, const char* path);
 
 #endif

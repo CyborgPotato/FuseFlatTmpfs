@@ -1,14 +1,19 @@
 #include "fs.h"
 #include "string.h"
 #include <time.h>
+#include <stdlib.h>
 
-flatTmp_node_t flatTmp_node_init() {
-  flatTmp_node_t ret = {0};
+flattmp_node_t flattmp_node_init() {
+  flattmp_node_t ret = flattmp_dir_init("/", 0744);
   return ret;
 }
 
-flatTmp_node_t flatTmp_node_blank() {
-  flatTmp_node_t ret = {0};
+void flattmp_node_destroy(flattmp_node_t node) {
+  free(node.name);
+}
+
+flattmp_node_t flattmp_node_blank(const char* path) {
+  flattmp_node_t ret = {0};
   ret.name = strdup("/");
   
   struct timespec ts_c;
@@ -18,8 +23,8 @@ flatTmp_node_t flatTmp_node_blank() {
   return ret;
 }
 
-flatTmp_node_t flatTmp_dir_init(const char* path, mode_t mode) {
-  flatTmp_node_t ret = flatTmp_node_blank();
+flattmp_node_t flattmp_dir_init(const char* path, mode_t mode) {
+  flattmp_node_t ret = flattmp_node_blank(path);
   ret.stat = (struct stat) {
     .st_mode = S_ISDIR(mode),
     .st_ctim = 0
@@ -27,6 +32,11 @@ flatTmp_node_t flatTmp_dir_init(const char* path, mode_t mode) {
   return ret;
 }
 
-void flatTmp_node_destroy() {}
+flattmp_node_t* flattmp_node_search(flattmp_node_t node, const char* path) {
+  if (node.stat.st_mode & S_IFDIR) {
+
+  }
+}
+
 
 

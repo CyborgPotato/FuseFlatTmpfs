@@ -1,6 +1,7 @@
 #define FUSE_USE_VERSION 31
 
 #include <fuse3/fuse.h>
+#include "fs.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -14,8 +15,7 @@ static struct options {
   const size_t max_filesize;
 } options;
 
-static uid_t uid;
-static gid_t gid;
+flattmp_node_t rootNode;
 
 #define OPTION(t, p, v)                           \
     { t, offsetof(struct options, p), 1 }
@@ -29,10 +29,13 @@ static const struct fuse_opt options_spec[] = {
 static void *flattmp_init(struct fuse_conn_info *conn,
 			  struct fuse_config *cfg) {
   cfg->kernel_cache = 1;
+  rootNode = flattmp_node_init();
   return NULL;
 }
 
-static void flattmp_destroy(void *data) {}
+static void flattmp_destroy(void *data) {
+  flattmp_node_destroy(rootNode);
+}
 
 static int flattmp_getattr(const char *path, struct stat *stbuf,
 			   struct fuse_file_info *fi) {
@@ -40,19 +43,15 @@ static int flattmp_getattr(const char *path, struct stat *stbuf,
 
   struct fuse_context *ctx;
   ctx = fuse_get_context();
-  
-  uid = ctx->uid;
-  gid = ctx->gid;
-  
+
   memset(stbuf, 0, sizeof(struct stat));
-  stbuf->st_uid = uid;
-  stbuf->st_gid = gid;
-  if (strcmp(path, "/") == 0) {
-    stbuf->st_mode = S_IFDIR | 0700;
-    stbuf->st_nlink = 1;
+  flattmp_node_t node = flattmp_node_search(rootNode, path);
+  if (node.name != NULL) {
+    memcpy(stbuf, &node.stat, sizeof(node.stat));
   }else {
     res = -ENOENT;
   }
+
   return res;
 }
 

@@ -10,9 +10,11 @@
 #include <assert.h>
 
 static struct options {
-  const size_t max_size;
-  const size_t max_innodes;
-  const size_t max_filesize;
+  size_t size;
+  size_t max_size;
+  size_t n_inodes;
+  size_t max_inodes;
+  size_t max_filesize;
 } options;
 
 flattmp_node_t *rootNode;
@@ -21,7 +23,7 @@ flattmp_node_t *rootNode;
     { t, offsetof(struct options, p), 1 }
 static const struct fuse_opt options_spec[] = {
   OPTION("--size=%z", max_size, 16*1024*1024),
-  OPTION("--max_innodes=%z", max_innodes, 256),
+  OPTION("--max_inodes=%z", max_inodes, 256),
   OPTION("--max_filesize=%z", max_filesize, 16 * 1024*1024),
   FUSE_OPT_END
 };
@@ -146,6 +148,9 @@ const struct fuse_operations flattmp_op = {
 int main(int argc, char** argv) {
   int ret;
 
+  options.size = 0;
+  options.n_inodes = 0;
+  
   struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
   if (fuse_opt_parse(&args, &options, options_spec, NULL) == -1) {

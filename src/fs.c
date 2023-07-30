@@ -76,6 +76,35 @@ flattmp_node_t* flattmp_dir_add(flattmp_node_t *node, const char* path, mode_t m
   return ret;
 }
 
+flattmp_node_t* flattmp_dir_del(flattmp_node_t *node, const char* path) {
+  if ((~node->stat.st_mode) & S_IFDIR)
+    return NULL;
+  flattmp_node_t *ret = node;
+  flattmp_node_t *par = NULL;
+  char* basename;
+
+  char* offset;
+  char* name;
+
+  char* eop = (char*) path + strlen(path);
+  
+  for (name = strtok_r((char*) path, "/", &offset); name!=NULL; name=strtok_r(NULL, "/", &offset)) {
+    par = ret;
+    basename = name;
+    ret = flattmp_dir_get(ret, name);
+    if ( ret == NULL && offset != eop) {
+      return NULL;
+    }
+  }
+
+  ret = flattmp_dir_get(par, basename);
+
+  HASH_DEL(par->content.dir.nodes, ret);
+  
+  return ret;
+}
+
+
 flattmp_node_t* flattmp_node_exists(flattmp_node_t* node, const char* path) {
   flattmp_node_t *ret = node;
 

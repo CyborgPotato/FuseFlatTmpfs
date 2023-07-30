@@ -38,6 +38,7 @@ void flattmp_node_destroy(flattmp_node_t **);
 
 flattmp_node_t* flattmp_dir_init(const char* name, mode_t mode);
 flattmp_node_t* flattmp_dir_add(flattmp_node_t *node, const char* path, mode_t mode);
+flattmp_node_t* flattmp_dir_del(flattmp_node_t *node, const char* path);
   
 flattmp_node_t* flattmp_node_exists(flattmp_node_t *node, const char* path);
 

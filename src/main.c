@@ -207,8 +207,6 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  printf("Max FS Size: %lu\nMax File Size: %lu\n", options.max_size, options.max_filesize);
-  
   ret = fuse_main(args.argc, args.argv, &flattmp_op, NULL);
   fuse_opt_free_args(&args);
   

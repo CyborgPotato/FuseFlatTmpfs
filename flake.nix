@@ -13,6 +13,7 @@
 
       deps = (with pkgs; [
         fuse3
+        uthash
       ]);
       
       propDeps = (with pkgs; [

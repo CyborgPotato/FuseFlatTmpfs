@@ -12,12 +12,11 @@
       };
 
       deps = (with pkgs; [
-        fuse3
         uthash
       ]);
       
       propDeps = (with pkgs; [
-
+        fuse3
       ]) ++ (pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs; [
       ]));
 
